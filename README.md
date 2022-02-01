@@ -31,6 +31,7 @@ server {
 ```
 
 Only `cmdline` is required. Others are optional, depending on the specific programs you invoke.
+But does anyone really need other environment variables besides `wwwroot`?
 
 ## Known Issues
 

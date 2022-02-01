@@ -25,31 +25,37 @@ http.createServer(function (req, res) {
     const wwwroot = req.headers.wwwroot;
     const programPath = cmdline.split(' ')[0];
     if (fs.existsSync(programPath)) {
-        res.writeHead(200, {
-            'content-type': 'text/html'
-        });
-
         // Inherit env from env and http request headers
         let localEnv = JSON.parse(JSON.stringify(process.env));
         localEnv.url = req.url;
         localEnv.wwwroot = wwwroot;
         console.log(`localEnv.url: ${localEnv.url}`);
         console.log(`localEnv.wwwroot: ${localEnv.wwwroot}`);
-        console.log('----------------');
+        console.log('-------');
         
         // res.end('');
         // return 0;
 
         // Give response
         try {
+            res.writeHead(200, {
+                'content-type': 'text/html'
+            });
             const stdout = sh(`${cmdline}`, {
-                cwd: '/tmp',
+                // cwd: '/tmp',
                 env: localEnv,
                 timeout: req.headers.syscgi_timeout || CONFIG.timeout
             }).toString();
             res.end(stdout);
+            console.log('stdout');
+            console.log(stdout);
+            console.log('----------------------------------------------');
+            return 0;
         } catch (e) {
             // Any handling?
+            console.log(e);
+            res.writeHead(503);
+            res.end('503: Service Temporarily Unavailable')
         };
     } else {
         res.writeHead(500);
