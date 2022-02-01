@@ -41,12 +41,16 @@ http.createServer(function (req, res) {
         // return 0;
 
         // Give response
-        const stdout = sh(`${cmdline}`, {
-            cwd: '/tmp',
-            env: localEnv,
-            timeout: req.headers.syscgi_timeout || CONFIG.timeout
-        }).toString();
-        res.end(stdout);
+        try {
+            const stdout = sh(`${cmdline}`, {
+                cwd: '/tmp',
+                env: localEnv,
+                timeout: req.headers.syscgi_timeout || CONFIG.timeout
+            }).toString();
+            res.end(stdout);
+        } catch (e) {
+            // Any handling?
+        };
     } else {
         res.writeHead(500);
         res.end(`500: Server Internal Error`);
