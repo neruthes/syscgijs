@@ -19,9 +19,7 @@ Suppose that a syscgijs progress is listening at port 9234.
 server {
     listen 80;
     server_name nas.ndlt6g.lan;
-    location / {
-        root /srv/myNAS;
-    }
+    root /srv/myNAS;
     location ~ /$ {
         proxy_set_header cmdline '/usr/bin/node /home/neruthes/DEV/coolaltindex/coolaltindex.js';
         proxy_set_header wwwroot $document_root;
