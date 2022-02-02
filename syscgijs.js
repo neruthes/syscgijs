@@ -21,7 +21,7 @@ if (fs.existsSync(configPath)) {
 console.log(`Server starting.`);
 
 http.createServer(function (req, res) {
-    const cmdline = req.headers.cmdline
+    const cmdline = req.headers.cmdline;
     const wwwroot = req.headers.wwwroot;
     const programPath = cmdline.split(' ')[0];
     if (fs.existsSync(programPath)) {
