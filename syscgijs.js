@@ -24,7 +24,7 @@ http.createServer(function (req, res) {
     const cmdline = req.headers.cmdline;
     const wwwroot = req.headers.wwwroot;
     const programPath = cmdline.split(' ')[0];
-    if (fs.existsSync(programPath)) {
+    try {
         // Inherit env from env and http request headers
         let localEnv = JSON.parse(JSON.stringify(process.env));
         localEnv.url = req.url;
@@ -39,7 +39,7 @@ http.createServer(function (req, res) {
         // Give response
         try {
             res.writeHead(200, {
-                'content-type': 'text/html'
+                'content-type': req.headers.restype || 'text/plain'
             });
             const stdout = sh(`${cmdline}`, {
                 // cwd: '/tmp',
@@ -55,9 +55,9 @@ http.createServer(function (req, res) {
             // Any handling?
             console.log(e);
             res.writeHead(503);
-            res.end('503: Service Temporarily Unavailable')
+            res.end(`503: Service Temporarily Unavailable : ${JSON.stringify(e, 4)}`);
         };
-    } else {
+    } catch (e) {
         res.writeHead(500);
         res.end(`500: Server Internal Error`);
     };
