@@ -46,8 +46,9 @@ http.createServer(function (req, res) {
                     'content-type': req.headers.restype || 'text/plain'
                 });
                 const stdout = sh(`${cmdline}`, {
-                    // cwd: '/tmp',
+                    cwd: '/tmp',
                     env: localEnv,
+                    input: reqBodyData,
                     timeout: req.headers.syscgi_timeout || CONFIG.timeout || 1000
                 }).toString();
                 res.end(stdout);
