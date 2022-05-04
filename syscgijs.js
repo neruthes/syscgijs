@@ -60,7 +60,8 @@ http.createServer(function (req, res) {
                 // Any handling?
                 console.log(e);
                 res.writeHead(503);
-                res.end(`503: Service Temporarily Unavailable : ${JSON.stringify(e, 4)}`);
+                res.end(`503: Service Temporarily Unavailable : ${JSON.stringify(e, '\t', 4)}`);
+                res.end(`503: Service Temporarily Unavailable : ${e.stdout.data.toString()}`);
             };
         } catch (e) {
             res.writeHead(500);
