@@ -21,44 +21,49 @@ if (fs.existsSync(configPath)) {
 console.log(`Server starting.`);
 
 http.createServer(function (req, res) {
-    const cmdline = req.headers.cmdline;
-    const wwwroot = req.headers.wwwroot;
-    const programPath = cmdline.split(' ')[0];
-    try {
-        // Inherit env from env and http request headers
-        let localEnv = JSON.parse(JSON.stringify(process.env));
-        localEnv.url = req.url;
-        localEnv.wwwroot = wwwroot;
-        console.log(`localEnv.url: ${localEnv.url}`);
-        console.log(`localEnv.wwwroot: ${localEnv.wwwroot}`);
-        console.log('-------');
-        
-        // res.end('');
-        // return 0;
-
-        // Give response
+    let reqBodyData = '';
+    req.on('data', function (chunk) {
+        reqBodyData += chunk;
+    });
+    req.on('end', function () {
+        // Actually do things here
+        const cmdline = req.headers.cmdline;
+        const wwwroot = req.headers.wwwroot;
+        const programPath = cmdline.split(' ')[0];
         try {
-            res.writeHead(200, {
-                'content-type': req.headers.restype || 'text/plain'
-            });
-            const stdout = sh(`${cmdline}`, {
-                // cwd: '/tmp',
-                env: localEnv,
-                timeout: req.headers.syscgi_timeout || CONFIG.timeout
-            }).toString();
-            res.end(stdout);
-            console.log('stdout');
-            console.log(stdout);
-            console.log('----------------------------------------------');
-            return 0;
+            // Inherit env from env and http request headers
+            let localEnv = JSON.parse(JSON.stringify(process.env));
+            localEnv.url = req.url;
+            localEnv.wwwroot = wwwroot;
+            localEnv.reqBodyData = reqBodyData;
+            console.log(`localEnv.url: ${localEnv.url}`);
+            console.log(`localEnv.wwwroot: ${localEnv.wwwroot}`);
+            console.log('-------');
+
+            // Give response
+            try {
+                res.writeHead(200, {
+                    'content-type': req.headers.restype || 'text/plain'
+                });
+                const stdout = sh(`${cmdline}`, {
+                    // cwd: '/tmp',
+                    env: localEnv,
+                    timeout: req.headers.syscgi_timeout || CONFIG.timeout || 1000
+                }).toString();
+                res.end(stdout);
+                console.log('stdout');
+                console.log(stdout);
+                console.log('------------------------------');
+                return 0;
+            } catch (e) {
+                // Any handling?
+                console.log(e);
+                res.writeHead(503);
+                res.end(`503: Service Temporarily Unavailable : ${JSON.stringify(e, 4)}`);
+            };
         } catch (e) {
-            // Any handling?
-            console.log(e);
-            res.writeHead(503);
-            res.end(`503: Service Temporarily Unavailable : ${JSON.stringify(e, 4)}`);
+            res.writeHead(500);
+            res.end(`500: Server Internal Error`);
         };
-    } catch (e) {
-        res.writeHead(500);
-        res.end(`500: Server Internal Error`);
-    };
+    });
 }).listen(9234, '127.0.0.1');
